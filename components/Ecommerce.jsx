@@ -3,6 +3,7 @@ import React, { useEffect } from 'react'
 import { fetchProducts } from '../api/products';
 import { useCart } from './CartContext';
 import { ActivityIndicator } from 'react-native';
+import { Button } from 'react-native';
 
 const Ecommerce = () => {
   const [products, setProducts] = React.useState([]);
@@ -77,12 +78,34 @@ const filteredProducts = selectedCategory === 'All'
                     <Image
                        source={{uri: item.thumbnail}}
                        style={styles.image}
+                       resizeMethod='cover'
                         onLoadStart={() => setImageLoading(prev => ({...prev, [item.id]: true}))}
                         onLoadEnd={() => setImageLoading(prev => ({...prev, [item.id]: false}))}
                         onError={()=>setImageError(prev => ({...prev, [item.id]: true}))}
-                    
                     />
                 )}
+                {item.discountPercentage > 0 &&(
+                  <View style={styles.discountBadge}>
+                    <Text style={styles.discountText}>{Math.round(item.discountPercentage)}%</Text>
+                  </View>
+                )}
+                <View style={styles.info}>
+                  <Text style={styles.category}>{item.category}</Text>
+                  <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+                  <Text style={styles.brand}>{item.brand}</Text>
+                  <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+                  <View style={styles.ratingContainer}>
+                    <Text style={styles.rating}>⭐ {item.rating}</Text>
+                    <Text style={styles.stock}>In Stock: {item.stock}</Text>
+                  </View>
+                  <View style={styles.priceContainer}>
+                       <Text style={styles.price}>${item.price}</Text>
+                        {item.discountPercentage > 0 && (
+                          <Text style={styles.originalPrice}>${(item.price / (1 - item.discountPercentage / 100)).toFixed(2)}</Text>
+                        )}
+                  </View>
+                  <Button title="Add to Cart" onPress={() => handleAddToCart(item)} />
+                </View>
               </View>
             </View>
         )
