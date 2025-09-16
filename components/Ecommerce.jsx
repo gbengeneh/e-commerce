@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect } from 'react'
 import { fetchProducts } from '../api/products';
 import { useCart } from './CartContext';
@@ -61,6 +61,34 @@ const filteredProducts = selectedCategory === 'All'
     );
   }
 
+  const renderItem = ({item, index}) => {
+      const isRightColumn = index % 2 === 1;
+        return(
+            <View style={[styles.productContainer, {flexBasis: '48%', marginTop:8 , marginLeft: 8 , marginRight: isRightColumn ? 16 : 8}]}>
+              <View style={styles.imageContainer}>
+                {imageLoading[item.id] && (
+                  <ActivityIndicator style={styles.imageLoader} size="small" color="#e74c3c" />
+                )}
+                {imageError[item.id] ? (
+                    <View style={styles.imagePlaceholder}>
+                      <Text style={styles.placeholderText}>Image not available</Text>
+                    </View>
+                ):(
+                    <Image
+                       source={{uri: item.thumbnail}}
+                       style={styles.image}
+                        onLoadStart={() => setImageLoading(prev => ({...prev, [item.id]: true}))}
+                        onLoadEnd={() => setImageLoading(prev => ({...prev, [item.id]: false}))}
+                        onError={()=>setImageError(prev => ({...prev, [item.id]: true}))}
+                    
+                    />
+                )}
+              </View>
+            </View>
+        )
+  }
+
+
   return (
     <View style={{flex:1}}>
      <ScrollView
@@ -68,11 +96,39 @@ const filteredProducts = selectedCategory === 'All'
       showsHorizontalScrollIndicator={false}
       style={styles.filterContainer}
      >
-         
+         {categories.map((category) => (
+            <TouchableOpacity
+            key={category}
+            style={[
+              styles.filterButton,
+              selectedCategory === category && styles.filterButtonSelected,
+            ]}
+            onPress={() => setSelectedCategory(category)}
+            >
+                  <Text 
+                    style={[
+                      styles.filterButtonText,
+                      selectedCategory === category && styles.filterButtonTextSelected,
+                    ]}
+                  >
+                    {category}
+                  </Text>
+            </TouchableOpacity>
+         ))}
      </ScrollView>
+
+
+     <FlatList
+     data={filteredProducts}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderItem}
+      contentContainerStyle={styles.list}
+      numColumns={2}
+      // columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
+     />
     </View>
-  )
-}
+  );
+};
 
 export default Ecommerce
 
