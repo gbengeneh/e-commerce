@@ -21,6 +21,11 @@ export const fetchUsers = async () => {
   return response.data.users;
 };
 
+export const fetchUserCarts = async (userId) => {
+  const response = await axios.get(`${API_BASE_URL}/carts/user/${userId}`);
+  return response.data.carts;
+};
+
 export const login = async (username, password) => {
   const response = await axios.post(`${API_BASE_URL}/auth/login`, {
     username,

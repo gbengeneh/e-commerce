@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartContext = createContext();
 
@@ -46,6 +47,30 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
+  const checkout = async () => {
+    if (cartItems.length === 0) return;
+    const order = {
+      id: Date.now(), // Simple ID
+      products: cartItems.map(item => ({
+        id: item.id,
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      total: getTotal(),
+      date: new Date().toISOString(),
+    };
+    try {
+      const existingOrders = await AsyncStorage.getItem('user_orders');
+      const orders = existingOrders ? JSON.parse(existingOrders) : [];
+      orders.push(order);
+      await AsyncStorage.setItem('user_orders', JSON.stringify(orders));
+      setCartItems([]); // Clear cart after checkout
+    } catch (error) {
+      console.error('Error saving order:', error);
+    }
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -54,6 +79,7 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         updateQuantity,
         getTotal,
+        checkout,
       }}
     >
       {children}

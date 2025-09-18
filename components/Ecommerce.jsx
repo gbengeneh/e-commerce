@@ -1,9 +1,7 @@
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Alert, Button, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { fetchProducts } from '../api/products';
-import { useCart } from './CartContext';
-import { ActivityIndicator } from 'react-native';
-import { Button } from 'react-native';
+import { useCart } from '../contexts/CartContext';
 
 const Ecommerce = () => {
   const [products, setProducts] = React.useState([]);

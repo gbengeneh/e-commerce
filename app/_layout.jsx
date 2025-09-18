@@ -1,7 +1,8 @@
-import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { CartProvider, useCart } from '../components/CartContext';
-import { View, Text, StyleSheet } from 'react-native';
+import { Tabs } from 'expo-router';
+import { StyleSheet, Text, View } from 'react-native';
+import { CartProvider, useCart } from '../contexts/CartContext';
+import { UserProvider } from '../contexts/UserContext';
 
 const CartTabIcon = ({ color, size }) => {
   const { cartItems } = useCart();
@@ -21,6 +22,7 @@ const CartTabIcon = ({ color, size }) => {
 
 export default function TabLayout() {
   return (
+    <UserProvider>
     <CartProvider>
       <Tabs>
       <Tabs.Screen
@@ -57,6 +59,7 @@ export default function TabLayout() {
       />
       </Tabs>
     </CartProvider>
+    </UserProvider>
   );
 }
 
