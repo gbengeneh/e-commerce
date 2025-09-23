@@ -72,6 +72,11 @@ function TabLayoutContent() {
           backgroundColor: theme.card,
           borderTopColor: theme.border,
         },
+        tabBarItemStyle: {
+         flex: 1, 
+         alignItems: 'center',
+          justifyContent: 'center',
+},
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.textSecondary,
       }}
@@ -94,6 +99,7 @@ function TabLayoutContent() {
           ),
         }}
       />
+      
       <Tabs.Screen
         name="carts"
         options={{
@@ -101,11 +107,24 @@ function TabLayoutContent() {
           tabBarIcon: ({ color, size }) => <CartTabIcon color={color} size={size} />,
         }}
       />
+       <Tabs.Screen
+        name="login"
+        options={{
+         href: null, // removes it from the tab bar AND navigation stack
+        }}
+      />
       <Tabs.Screen
         name="wishlist"
         options={{
           title: 'Wishlist',
           tabBarIcon: ({ color, size }) => <WishlistTabIcon color={color} size={size} />,
+        }}
+      />
+      
+      <Tabs.Screen
+        name="productDetails"
+        options={{
+          href: null, // removes it from the tab bar AND navigation stack
         }}
       />
       <Tabs.Screen
@@ -117,13 +136,7 @@ function TabLayoutContent() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="login"
-        options={{
-          title: 'Login',
-          tabBarButton: () => null, // Hide from tab bar
-        }}
-      />
+     
     </Tabs>
   );
 }
