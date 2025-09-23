@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { fetchUsers } from '../api/products';
 import { useUser } from '../contexts/UserContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { isAuthenticated, user } = useUser();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -25,7 +27,7 @@ const Users = () => {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -33,16 +35,16 @@ const Users = () => {
 
   if (error) {
     return (
-      <View style={styles.center}>
-        <Text>{error}</Text>
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.text }}>{error}</Text>
       </View>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <View style={styles.center}>
-        <Text>Please login to view user information.</Text>
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.text }}>Please login to view user information.</Text>
       </View>
     );
   }
@@ -51,20 +53,20 @@ const Users = () => {
 
   if (!authenticatedUser) {
     return (
-      <View style={styles.center}>
-        <Text>User information not found.</Text>
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <Text style={{ color: theme.text }}>User information not found.</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.userContainer}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.userContainer, { backgroundColor: theme.card }]}>
         <Image source={{ uri: authenticatedUser.image }} style={styles.image} />
         <View style={styles.info}>
-          <Text style={styles.name}>{authenticatedUser.firstName} {authenticatedUser.lastName}</Text>
-          <Text>{authenticatedUser.email}</Text>
-          <Text>{authenticatedUser.phone}</Text>
+          <Text style={[styles.name, { color: theme.text }]}>{authenticatedUser.firstName} {authenticatedUser.lastName}</Text>
+          <Text style={{ color: theme.textSecondary }}>{authenticatedUser.email}</Text>
+          <Text style={{ color: theme.textSecondary }}>{authenticatedUser.phone}</Text>
         </View>
       </View>
     </View>
@@ -78,7 +80,6 @@ const styles = StyleSheet.create({
   },
   userContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
     elevation: 2,

@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, Button, Image, Alert } from 'react-native';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Carts = () => {
   const { cartItems, removeFromCart, updateQuantity, getTotal, checkout } = useCart();
+  const { theme } = useTheme();
 
   const handleCheckout = async () => {
     await checkout();
@@ -11,11 +13,11 @@ const Carts = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.cartContainer}>
+    <View style={[styles.cartContainer, { backgroundColor: theme.card }]}>
       <Image source={{ uri: item.thumbnail }} style={styles.image} />
-      <Text style={styles.title}>{item.title}</Text>
-      <Text>Price: ${item.price}</Text>
-      <Text>Quantity: {item.quantity}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
+      <Text style={{ color: theme.text }}>Price: ${item.price}</Text>
+      <Text style={{ color: theme.text }}>Quantity: {item.quantity}</Text>
       <View style={styles.buttonContainer}>
         <Button title="-" onPress={() => updateQuantity(item.id, item.quantity - 1)} />
         <Button title="+" onPress={() => updateQuantity(item.id, item.quantity + 1)} />
@@ -25,8 +27,8 @@ const Carts = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.total}>Total: ${getTotal().toFixed(2)}</Text>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.total, { color: theme.text }]}>Total: ${getTotal().toFixed(2)}</Text>
       {cartItems.length > 0 && (
         <View style={styles.checkoutContainer}>
           <Button title="Checkout" onPress={handleCheckout} />
@@ -37,7 +39,7 @@ const Carts = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>Your cart is empty</Text>}
+        ListEmptyComponent={<Text style={[styles.empty, { color: theme.textSecondary }]}>Your cart is empty</Text>}
       />
     </View>
   );
@@ -66,6 +68,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#333',
   },
   buttonContainer: {
     flexDirection: 'row',
