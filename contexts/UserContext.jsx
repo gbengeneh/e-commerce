@@ -18,7 +18,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const loadUser = async () => {
-      try { 
+      try {
         const storedAuth = await AsyncStorage.getItem('isAuthenticated');
         const storedUser = await AsyncStorage.getItem('user');
         if (storedAuth === 'true') {

@@ -10,9 +10,8 @@ export const fetchProducts = async () => {
 
 export const fetchCarts = async () => {
   const token = await AsyncStorage.getItem('token');
-  const response = await axios.get(`${API_BASE_URL}/carts`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const response = await axios.get(`${API_BASE_URL}/carts`, { headers });
   return response.data.carts;
 };
 
@@ -27,24 +26,34 @@ export const fetchUserCarts = async (userId) => {
 };
 
 export const login = async (username, password) => {
-  const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-    username,
-    password,
-  });
-  const { token } = response.data;
-  await AsyncStorage.setItem('token', token);
-  return response.data;
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      username,
+      password,
+    });
+    const { token } = response.data;
+    if (token) {
+      await AsyncStorage.setItem('token', token);
+    }
+    return response.data;
+  } catch (error) {
+    console.error('API Login Error:', error);
+    throw error;
+  }
 };
 
 export const addToCart = async (productId, quantity = 1) => {
+  const token = await AsyncStorage.getItem('token');
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const response = await axios.post(`${API_BASE_URL}/carts/add`, {
     userId: 1, // Assuming userId 1 for simulation
     products: [{ id: productId, quantity }],
-  });
+  }, { headers });
   return response.data;
 };
 
-// Generic function for other endpoints
+// Generic fun
+// ction for other endpoints
 export const fetchData = async (endpoint) => {
   const response = await axios.get(`${API_BASE_URL}/${endpoint}`);
   return response.data;

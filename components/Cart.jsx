@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, Button, Image, Alert } from 'react-native';
-import { useCart } from './CartContext';
+import { useCart } from '../contexts/CartContext';
 
 const Carts = () => {
   const { cartItems, removeFromCart, updateQuantity, getTotal, checkout } = useCart();

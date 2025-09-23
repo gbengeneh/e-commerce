@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { fetchUsers } from '../api/products';
-import { useUser } from './UserContext';
+import { useUser } from '../contexts/UserContext';
 
 const Users = () => {
   const [users, setUsers] = useState([]);

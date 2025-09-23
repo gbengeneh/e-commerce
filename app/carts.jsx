@@ -1,32 +1,35 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
-import { useRouter } from 'expo-router'
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useUser } from '../contexts/UserContext';
+import Cart from '../components/Cart';
 
-const Cart = () => {
-
+export default function CartsPage() {
   const router = useRouter();
-  const {isAuthenticated} = useUser();
+  const { isAuthenticated } = useUser();
 
-  useEffect(()=>{
-    if(!isAuthenticated){
+  useEffect(() => {
+    // Check if authenticated
+    if (!isAuthenticated) {
       router.replace('/login');
     }
-  },[isAuthenticated]);
+  }, [isAuthenticated]);
 
-  if(!isAuthenticated){
+  if (!isAuthenticated) {
     return (
-      <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
-        <Text>Redirecting to Login...</Text>
+      <View style={styles.container}>
+        <Text>Redirecting to login...</Text>
       </View>
-    ); // or a loading indicator
+    );
   }
 
-  return (
-    <Cart/>
-  )
+  return <Cart />;
 }
 
-export default Cart
-
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

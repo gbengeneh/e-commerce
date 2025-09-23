@@ -1,157 +1,167 @@
-import React, { useEffect } from 'react';
-import { ActivityIndicator, Alert, Button, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { fetchProducts } from '../api/products';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, Button, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { fetchProducts, login } from '../api/products';
 import { useCart } from '../contexts/CartContext';
+import { useUser } from '../contexts/UserContext';
 
-const Ecommerce = () => {
-  const [products, setProducts] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
-  const [selectedCategory, setSelectedCategory] = React.useState('All');
-  const [imageLoading, setImageLoading] = React.useState({});
-  const [imageError, setImageError] = React.useState({});
-  const {addToCart} = useCart();
+const EcommerceApp = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [imageLoading, setImageLoading] = useState({});
+  const [imageError, setImageError] = useState({});
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useUser();
+  const router = useRouter();
 
-useEffect(() => {
-  const loadProducts = async ()=>{
-    try{
-      const data = await fetchProducts();
-      if(Array.isArray(data)){
-        setProducts(data);
-      }else{
-        setError('Invalid product data recieved');
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          console.error('Fetched products data is not an array:', data);
+          setError('Invalid products data received');
+        }
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('Failed to load products');
+      } finally {
+        setLoading(false);
       }
-    }catch(err){
-              console.error('Error fetching products:', err);
-      setError('Failed to load products');
-    }finally{
-      setLoading(false);
-    }
-  };
-  loadProducts();
-}, []);
+    };
+    loadProducts();
+  }, []);
 
-const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
-const filteredProducts = selectedCategory === 'All' 
-? products 
-: products.filter(p => p.category === selectedCategory);
+  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
- const handleAddToCart = (product) => {
-    if (!global.isAuthenticated) {
-      Alert.alert('Authentication required', 'Please login to add products to cart.');
+  const filteredProducts = selectedCategory === 'All'
+    ? products
+    : products.filter(p => p.category === selectedCategory);
+
+  const handleAddToCart = (product) => {
+    if (!isAuthenticated) {
+      router.replace('/login');
       return;
     }
     addToCart(product);
     Alert.alert('Success', 'Product added to cart');
   };
 
-  if(loading){
-    return(
-      <View style={[styles.center, {flex:1}]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-  if(error){
-    return(
-      <View style={[styles.center, {flex:1}]}>
-        <Text style={{color:'red'}}>{error}</Text>
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  const renderItem = ({item, index}) => {
-      const isRightColumn = index % 2 === 1;
-        return(
-            <View style={[styles.productContainer, {flexBasis: '48%', marginTop:8 , marginLeft: 8 , marginRight: isRightColumn ? 16 : 8}]}>
-              <View style={styles.imageContainer}>
-                {imageLoading[item.id] && (
-                  <ActivityIndicator style={styles.imageLoader} size="small" color="#e74c3c" />
-                )}
-                {imageError[item.id] ? (
-                    <View style={styles.imagePlaceholder}>
-                      <Text style={styles.placeholderText}>Image not available</Text>
-                    </View>
-                ):(
-                    <Image
-                       source={{uri: item.thumbnail}}
-                       style={styles.image}
-                       resizeMethod='cover'
-                        onLoadStart={() => setImageLoading(prev => ({...prev, [item.id]: true}))}
-                        onLoadEnd={() => setImageLoading(prev => ({...prev, [item.id]: false}))}
-                        onError={()=>setImageError(prev => ({...prev, [item.id]: true}))}
-                    />
-                )}
-                {item.discountPercentage > 0 &&(
-                  <View style={styles.discountBadge}>
-                    <Text style={styles.discountText}>{Math.round(item.discountPercentage)}%</Text>
-                  </View>
-                )}
-                <View style={styles.info}>
-                  <Text style={styles.category}>{item.category}</Text>
-                  <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-                  <Text style={styles.brand}>{item.brand}</Text>
-                  <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
-                  <View style={styles.ratingContainer}>
-                    <Text style={styles.rating}>⭐ {item.rating}</Text>
-                    <Text style={styles.stock}>In Stock: {item.stock}</Text>
-                  </View>
-                  <View style={styles.priceContainer}>
-                       <Text style={styles.price}>${item.price}</Text>
-                        {item.discountPercentage > 0 && (
-                          <Text style={styles.originalPrice}>${(item.price / (1 - item.discountPercentage / 100)).toFixed(2)}</Text>
-                        )}
-                  </View>
-                  <Button title="Add to Cart" onPress={() => handleAddToCart(item)} />
-                </View>
-              </View>
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
+
+  const renderItem = ({ item, index }) => {
+    // Fix for Invariant Violation: Add key to root element and adjust flex basis for 2 columns
+    const isRightColumn = index % 2 === 1;
+    return (
+      <View style={[styles.productContainer, { flexBasis: '48%', marginTop: 8, marginLeft: 8, marginBottom: 8, marginRight: isRightColumn ? 16 : 8 }]}>
+        <View style={styles.imageContainer}>
+          {imageLoading[item.id] && (
+            <ActivityIndicator
+              style={styles.imageLoader}
+              size="small"
+              color="#e74c3c"
+            />
+          )}
+          {imageError[item.id] ? (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.placeholderText}>Image not available</Text>
             </View>
-        )
-  }
-
+          ) : (
+            <Image
+              source={{ uri: item.thumbnail }}
+              style={styles.image}
+              resizeMode="cover"
+              onLoadStart={() => setImageLoading(prev => ({ ...prev, [item.id]: true }))}
+              onLoad={() => setImageLoading(prev => ({ ...prev, [item.id]: false }))}
+              onError={() => setImageError(prev => ({ ...prev, [item.id]: true }))}
+            />
+          )}
+          {item.discountPercentage > 0 && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.info}>
+          <Text style={styles.category}>{item.category}</Text>
+          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+          <Text style={styles.brand}>{item.brand}</Text>
+          <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.rating}>⭐ {item.rating}</Text>
+            <Text style={styles.stock}>Stock: {item.stock}</Text>
+          </View>
+          <View style={styles.priceContainer}>
+            <Text style={styles.price}>${item.price}</Text>
+            {item.discountPercentage > 0 && (
+              <Text style={styles.originalPrice}>${(item.price / (1 - item.discountPercentage / 100)).toFixed(2)}</Text>
+            )}
+          </View>
+          <Button title="Add to Cart" onPress={() => handleAddToCart(item)} />
+        </View>
+      </View>
+    );
+  };
 
   return (
-    <View style={{flex:1}}>
-     <ScrollView
-     horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.filterContainer}
-     >
-         {categories.map((category) => (
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 0 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterContainer}
+        >
+          {categories.map(category => (
             <TouchableOpacity
-            key={category}
-            style={[
-              styles.filterButton,
-              selectedCategory === category && styles.filterButtonSelected,
-            ]}
-            onPress={() => setSelectedCategory(category)}
+              key={category}
+              style={[
+                styles.filterButton,
+                selectedCategory === category && styles.filterButtonSelected,
+              ]}
+              onPress={() => setSelectedCategory(category)}
             >
-                  <Text 
-                    style={[
-                      styles.filterButtonText,
-                      selectedCategory === category && styles.filterButtonTextSelected,
-                    ]}
-                  >
-                    {category}
-                  </Text>
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  selectedCategory === category && styles.filterButtonTextSelected,
+                ]}
+              >
+                {category}
+              </Text>
             </TouchableOpacity>
-         ))}
-     </ScrollView>
+          ))}
+        </ScrollView>
+      </View>
 
-
-     <FlatList
-     data={filteredProducts}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderItem}
-      contentContainerStyle={styles.list}
-      numColumns={2}
-      // columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
-     />
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        numColumns={2}
+        style={{ flex: 1 }}
+      />
     </View>
   );
 };
-
-export default Ecommerce
 
 const styles = StyleSheet.create({
   list: {
@@ -308,3 +318,5 @@ filterButtonText: {
     alignItems: 'center',
   },
 });
+
+export default EcommerceApp;
